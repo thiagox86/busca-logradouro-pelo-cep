@@ -1,0 +1,138 @@
+<style>
+    #tr-div-cep,
+    #tr-div-cep input {
+        width: 100%;
+        margin-bottom: 25px;
+    }
+
+    #tr-div-cep input {
+        height: 50px;
+        font-size: 1.5em;
+    }
+
+    #tr-div-cep button {
+        font-family: Ubuntu;
+        font-size: 1.3em;
+    }
+
+    table {
+        margin-top: 25px;
+        width: 100%;
+    }
+
+    table, th, tr, td {
+        border: 1px solid #000;
+        text-align: center;
+        padding: 15px;
+    }
+</style>
+
+<div id="tr-div-cep">
+    <input  type="number" 
+            id="tr-cep" 
+            placeholder="CEP"
+            onkeypress="return apenasNumero(event)"            
+    >
+    <button onclick="buscaLogradouro()">BUSCA ENDEREÇO</button>
+    <button onclick="limpaBusca()">LIMPAR BUSCA</button>
+</div>
+
+<div id="tr-cep-div-table"></div>
+
+<script>
+    function apenasNumeros(e) {
+        let tecla = (window.event) ? event.keyCode : e.which;
+        if ((tecla > 47 && tecla < 58)) 
+            return true;
+        else
+            return false;
+    }
+
+    function buscaLogradouro() {
+        let cep = document.getElementById('tr-cep').value;
+        if (cep === '') {
+            alert('Nenhum CEP foi informado!');
+            limpaInput();
+        } else if (cep.length < 8 || cep.length > 8) {
+            alert('Favor informar um CEP válido');
+            limpaInput();
+        } else {            
+            let url = 'https://viacep.com.br/ws/'+cep+'/json/';
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.cep == undefined) {
+                        alert('CEP não encontrado ou não existe. Faça uma nova busca!');
+                        limpaInput();
+                    } else {
+                        //criando o elemento tabela, cabeçalho e corpo 
+                        let table = document.createElement('table');                        
+                        let thead = document.createElement('thead');
+                        let tbody = document.createElement('tbody');
+
+                        //criando cabeçalho da tabela
+                        table.appendChild(thead);                    
+                        let row_1 = document.createElement('tr');
+                        let heading_1 = document.createElement('th');
+                        heading_1.innerHTML = 'CEP';
+                        let heading_2 = document.createElement('th');
+                        heading_2.innerHTML = 'DDD';
+                        let heading_3 = document.createElement('th');
+                        heading_3.innerHTML = 'Logradouro';
+                        let heading_4 = document.createElement('th');
+                        heading_4.innerHTML = 'Bairro';
+                        let heading_5 = document.createElement('th');
+                        heading_5.innerHTML = 'Localidade';
+                        let heading_6 = document.createElement('th');
+                        heading_6.innerHTML = 'UF';
+
+                        row_1.appendChild(heading_1);
+                        row_1.appendChild(heading_2);
+                        row_1.appendChild(heading_3);
+                        row_1.appendChild(heading_4);
+                        row_1.appendChild(heading_5);
+                        row_1.appendChild(heading_6);
+                        thead.appendChild(row_1);
+
+                        //Populando dados obtidos pela requisição AJAX no corpo da tabela
+                        table.appendChild(tbody);
+                        let row_2 = document.createElement('tr');
+                        let row_2_data_1 = document.createElement('td');
+                        row_2_data_1.innerHTML = data.cep;
+                        let row_2_data_2 = document.createElement('td');
+                        row_2_data_2.innerHTML = data.ddd;
+                        let row_2_data_3 = document.createElement('td');
+                        row_2_data_3.innerHTML = data.logradouro;
+                        let row_2_data_4 = document.createElement('td');
+                        row_2_data_4.innerHTML = data.bairro;
+                        let row_2_data_5 = document.createElement('td');
+                        row_2_data_5.innerHTML = data.localidade;
+                        let row_2_data_6 = document.createElement('td');
+                        row_2_data_6.innerHTML = data.uf;
+
+                        row_2.appendChild(row_2_data_1);
+                        row_2.appendChild(row_2_data_2);
+                        row_2.appendChild(row_2_data_3);
+                        row_2.appendChild(row_2_data_4);
+                        row_2.appendChild(row_2_data_5);
+                        row_2.appendChild(row_2_data_6);
+                        tbody.appendChild(row_2);
+
+                        document.getElementById('tr-cep-div-table').appendChild(table);
+                        limpaInput();
+                    }
+                })
+                .catch(err => console.log(err));
+        }
+    }
+
+    function limpaInput() {
+        document.getElementById('tr-cep').value = '';
+    }
+
+    function limpaBusca() {
+        let tables = document.querySelectorAll('table');
+        tables.forEach(table => table.remove());
+        limpaInput();
+    }
+</script>
